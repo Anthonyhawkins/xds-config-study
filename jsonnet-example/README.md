@@ -352,7 +352,10 @@ echo "✅ All validations passed"
 # Generate production configs
 ./scripts/generate.sh --in roles --out production-build
 
-echo "🚀 Production configs generated"
+# Organize by nodes for deployment
+./scripts/sort.sh --build-dir production-build --out production-deployment
+
+echo "🚀 Production configs generated and organized for deployment"
 ```
 
 ### Testing Configuration Changes
@@ -583,6 +586,89 @@ done
 # Output: Error: Service 'missing' not found in role 'grpc-proxy'
 #         Available services: foo.service, bar.service, baz.service, ...
 ```
+
+#### `scripts/sort.sh` - Node-Centric Configuration Reorganization
+
+**Purpose**: Reorganize generated configurations from role/service/region structure to a node-centric deployment structure, where nodes are identified by role and region combinations.
+
+**Usage**:
+```bash
+./scripts/sort.sh --build-dir BUILD_DIR [--out OUTPUT_DIR]
+```
+
+**Parameters**:
+- `--build-dir BUILD_DIR`: Directory containing generated configurations (required)
+- `--out OUTPUT_DIR`: Output directory (default: `nodes-and-resources`)
+
+**Output Structure**:
+```
+nodes-and-resources/
+├── nodes/
+│   └── {role}.{region}.json     # Node configuration with service list
+└── resources/
+    └── {role}.{region}.{service}/
+        ├── cds.json             # Moved from build directory
+        └── eds.json             # Moved from build directory
+```
+
+**Examples**:
+
+```bash
+# Generate configurations first, then sort by node
+./scripts/generate.sh --in roles --out build
+./scripts/sort.sh --build-dir build
+
+# Custom output directory
+./scripts/sort.sh --build-dir build --out deployment-configs
+
+# Full workflow example
+./scripts/generate.sh --in roles --out build
+./scripts/validate/unique-names.sh build  # Validate before sorting
+./scripts/sort.sh --build-dir build --out production-deployment
+```
+
+**Node Identification**:
+- Nodes are identified by: `{role}.{region}` (e.g., `grpc-proxy.us-east-1`)
+- Each node manages all services within that role-region combination
+- Services are uniquely named: `{role}.{region}.{service}`
+
+**Sample Node Configuration**:
+```json
+{
+    "services": [
+        "grpc-proxy.us-east-1.foo.service",
+        "grpc-proxy.us-east-1.bar.service",
+        "grpc-proxy.us-east-1.baz.service"
+    ]
+}
+```
+
+**Operation Details**:
+- **Moves** configuration files (does not copy) from build directory to resource directories
+- Cleans up empty directories in the build directory after processing
+- Creates node mapping files showing which services each node should handle
+- Preserves original file content - this is purely structural reorganization
+
+**Sample Output**:
+```
+✓ Processing completed successfully!
+Summary:
+  - Total nodes: 9
+  - Total services: 20
+  - Output directory: nodes-and-resources
+
+🎉 Configuration sorting completed successfully!
+
+Next steps:
+  - Review node configurations in: nodes-and-resources/nodes/
+  - Deploy resources from: nodes-and-resources/resources/
+```
+
+**Use Cases**:
+- **Deployment Organization**: Organize configurations by deployment nodes rather than logical services
+- **XDS Management**: Each node can request configurations for all services it manages
+- **Infrastructure Mapping**: Clear mapping between infrastructure nodes and their service responsibilities
+- **Deployment Automation**: Structure ready for node-specific deployment scripts
 
 ### Validation Scripts
 
@@ -818,6 +904,14 @@ Found 2 unique name validation errors
    ./scripts/generate-target.sh --role http-proxy --service api.service --region us-east-1 --out test-api
    # Review generated configuration
    # Then generate full build
+   ```
+
+5. **Organize for Deployment**
+   ```bash
+   # Complete workflow: generate, validate, and organize
+   ./scripts/generate.sh --in roles --out build
+   ./scripts/validate/unique-names.sh build
+   ./scripts/sort.sh --build-dir build --out nodes-and-resources
    ```
 
 ### Configuration Maintenance

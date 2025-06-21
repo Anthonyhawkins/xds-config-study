@@ -1,0 +1,7 @@
+{
+   "connect_timeout": "2s",
+   "load_assignment": {
+      "cluster_name": "tcp-proxy.us-west-2.cache.service"
+   },
+   "name": "tcp-proxy.us-west-2.cache.service"
+}

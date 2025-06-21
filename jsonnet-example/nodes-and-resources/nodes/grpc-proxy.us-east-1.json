@@ -1,0 +1,3 @@
+{
+    "services": ["grpc-proxy.us-east-1.roo.service", "grpc-proxy.us-east-1.bar.service", "grpc-proxy.us-east-1.baz.service", "grpc-proxy.us-east-1.foo.service", "grpc-proxy.us-east-1.zix.service"]
+}

@@ -1,0 +1,3 @@
+{
+    "services": ["grpc-proxy.eu-central.roo.service", "grpc-proxy.eu-central.bar.service", "grpc-proxy.eu-central.baz.service", "grpc-proxy.eu-central.zix.service"]
+}

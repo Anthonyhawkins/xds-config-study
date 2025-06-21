@@ -1,0 +1,3 @@
+{
+    "services": ["http-proxy.eu-central.web.service", "http-proxy.eu-central.api.service"]
+}
