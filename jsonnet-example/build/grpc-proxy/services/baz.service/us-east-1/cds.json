@@ -1,7 +1,7 @@
 {
    "connect_timeout": "3s",
    "load_assignment": {
-      "cluster_name": "baz.service"
+      "cluster_name": "grpc-proxy.us-east-1.baz.service"
    },
-   "name": "baz.service"
+   "name": "grpc-proxy.us-east-1.baz.service"
 }

@@ -1,7 +1,7 @@
 {
    "connect_timeout": "3s",
    "load_assignment": {
-      "cluster_name": "bar.service"
+      "cluster_name": "grpc-proxy.us-west-2.bar.service"
    },
-   "name": "bar.service"
+   "name": "grpc-proxy.us-west-2.bar.service"
 }

@@ -85,6 +85,19 @@ The system uses Jsonnet templates to generate consistent output:
 
 These templates consume profile configurations and global variables to produce final JSON output.
 
+#### Compound Naming Convention
+
+Templates now generate compound names that include role, region, and service information to ensure uniqueness:
+
+**Format**: `{role}.{region}.{service_name}`
+
+**Examples**:
+- `grpc-proxy.us-east-1.foo.service`
+- `http-proxy.eu-central.api.service`
+- `tcp-proxy.us-west-2.cache.service`
+
+This naming convention ensures that configurations are unique across different roles and regions, preventing naming conflicts in multi-environment deployments.
+
 ### Resource Organization
 
 Configurations are organized hierarchically by:
@@ -404,16 +417,57 @@ Verifies profile regions exist in endpoints configuration:
 - Valid port ranges (1-65535)
 - No duplicate IP addresses across regions (warning)
 
+### Unique Names Validation
+
+Ensures generated configuration names are unique to prevent conflicts:
+
+```bash
+# First generate configurations
+./scripts/generate.sh --in roles --out build
+
+# Then validate unique names
+./scripts/validate/unique-names.sh build
+```
+
+**Validates:**
+- CDS files: `name` field must be unique across all `cds.json` files
+- EDS files: `cluster_name` field must be unique across all `eds.json` files
+- Detects and reports duplicate names with file locations
+
+**Example Output:**
+```
+✓ All 20 CDS names are unique
+✓ All 20 EDS cluster_names are unique
+```
+
+**Error Example:**
+```
+ERROR: Duplicate CDS name 'grpc-proxy.us-east-1.foo.service' found in files:
+  - grpc-proxy/services/bar.service/us-east-1/cds.json
+  - grpc-proxy/services/foo.service/us-east-1/cds.json
+```
+
 ### Running All Validations
 
 ```bash
-# Run all validations together
+# Run all validations together (source validations only)
 ./scripts/validate.sh roles
 
 # Run specific validation only
 ./scripts/validate.sh --weight-only roles
 ./scripts/validate.sh --fields-only roles
 ./scripts/validate.sh --endpoints-only roles
+./scripts/validate.sh --names-only roles  # Shows instructions for unique names validation
+```
+
+**Note**: Unique names validation requires generated configuration files and must be run separately:
+
+```bash
+# Generate configurations first
+./scripts/generate.sh --in roles --out build
+
+# Then run unique names validation
+./scripts/validate/unique-names.sh build
 ```
 
 ## Scripts Reference
@@ -545,6 +599,7 @@ done
 - `--weight-only`: Run only weight distribution validation
 - `--fields-only`: Run only required fields validation  
 - `--endpoints-only`: Run only endpoint consistency validation
+- `--names-only`: Show instructions for unique names validation
 - (no option): Run all validations
 
 **Examples**:
@@ -558,6 +613,7 @@ done
 ./scripts/validate.sh --weight-only roles
 ./scripts/validate.sh --fields-only roles
 ./scripts/validate.sh --endpoints-only roles
+./scripts/validate.sh --names-only roles
 
 # Validate specific role subset
 ./scripts/validate.sh roles/grpc-proxy
@@ -656,6 +712,51 @@ done
 ✅ [service.baz/us-west-2] Endpoint consistency valid
 ```
 
+#### `scripts/validate/unique-names.sh` - Unique Names Validator
+
+**Purpose**: Ensure that generated configuration names are unique to prevent conflicts in deployment environments.
+
+**Usage**:
+```bash
+./scripts/validate/unique-names.sh BUILD_DIR
+```
+
+**Parameters**:
+- `BUILD_DIR`: Directory containing generated configuration files (output from generate.sh)
+
+**Examples**:
+
+```bash
+# Validate unique names after generation
+./scripts/generate.sh --in roles --out build
+./scripts/validate/unique-names.sh build
+
+# Validate specific subset
+./scripts/generate.sh --in roles/grpc-proxy --out grpc-build
+./scripts/validate/unique-names.sh grpc-build
+
+# Save unique names validation results
+./scripts/validate/unique-names.sh build > unique-names-report.txt
+```
+
+**Sample Output**:
+```
+✓ All 20 CDS names are unique
+✓ All 20 EDS cluster_names are unique
+All unique name validations passed!
+```
+
+**Error Output**:
+```
+ERROR: Duplicate CDS name 'grpc-proxy.us-east-1.foo.service' found in files:
+  - grpc-proxy/services/bar.service/us-east-1/cds.json
+  - grpc-proxy/services/foo.service/us-east-1/cds.json
+ERROR: Duplicate EDS cluster_name 'http-proxy.eu-central.api.service' found in files:
+  - http-proxy/services/api.service/eu-central/eds.json
+  - http-proxy/services/web.service/eu-central/eds.json
+Found 2 unique name validation errors
+```
+
 ## Best Practices
 
 ### Configuration Design
@@ -680,6 +781,12 @@ done
    - Failover regions: Priority 1+, balanced weights
    - Backup regions: Higher priorities for redundancy
 
+5. **Naming Convention**
+   - Compound names automatically ensure uniqueness across roles and regions
+   - Format: `{role}.{region}.{service_name}` (e.g., `grpc-proxy.us-east-1.foo.service`)
+   - Use the unique names validation to verify no conflicts in generated configurations
+   - Avoid manual name customization that could break the compound naming pattern
+
 ### Development Workflow
 
 1. **Start Small**
@@ -690,8 +797,12 @@ done
 
 2. **Validate Early**
    ```bash
-   # Validate after every change
+   # Validate source configurations after every change
    ./scripts/validate.sh roles
+   
+   # Generate and validate unique names
+   ./scripts/generate.sh --in roles --out build
+   ./scripts/validate/unique-names.sh build
    ```
 
 3. **Use Version Control**
@@ -712,9 +823,10 @@ done
 ### Configuration Maintenance
 
 1. **Regular Validation**
-   - Run validations after configuration changes
-   - Use automated validation in workflows
-   - Monitor configuration consistency
+   - Run source validations after configuration changes: `./scripts/validate.sh roles`
+   - Generate and validate unique names: `./scripts/validate/unique-names.sh build`
+   - Use automated validation in CI/CD workflows
+   - Monitor configuration consistency across environments
 
 2. **Documentation**
    - Comment complex configurations
@@ -728,4 +840,4 @@ done
 
 ---
 
-This study demonstrates a systematic method for organizing and configuring resources using Jsonnet. The hierarchical inheritance system, comprehensive validation, and automation scripts provide a foundation for maintaining consistent, correct configurations across complex multi-role, multi-service deployments.
+This study demonstrates a systematic method for organizing and configuring resources using Jsonnet. The hierarchical inheritance system, compound naming convention for uniqueness, comprehensive validation (including unique names validation), and automation scripts provide a foundation for maintaining consistent, correct configurations across complex multi-role, multi-service deployments.

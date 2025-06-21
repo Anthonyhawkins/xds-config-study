@@ -5,6 +5,7 @@ local profile = import "profile.jsonnet";
 {
   resources: [
     {
+      // account for role and region in resource name
       cluster_name: std.extVar("role") + "." + std.extVar("region") + "." + std.extVar("cluster_name"),
       endpoints: [
         {

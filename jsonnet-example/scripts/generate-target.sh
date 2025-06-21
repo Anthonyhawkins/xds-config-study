@@ -151,6 +151,8 @@ generate_configs() {
             --jpath . \
             "$TEMPLATES_DIR/cluster.jsonnet" \
             --ext-str cluster_name="$SERVICE" \
+            --ext-str role="$ROLE" \
+            --ext-str region="$REGION" \
             > "$output_path/cds.json"
         echo "✓ Generated cds.json"
     else
@@ -165,6 +167,8 @@ generate_configs() {
             --jpath . \
             "$TEMPLATES_DIR/loadassignment.jsonnet" \
             --ext-str cluster_name="$SERVICE" \
+            --ext-str role="$ROLE" \
+            --ext-str region="$REGION" \
             > "$output_path/eds.json"
         echo "✓ Generated eds.json"
     else

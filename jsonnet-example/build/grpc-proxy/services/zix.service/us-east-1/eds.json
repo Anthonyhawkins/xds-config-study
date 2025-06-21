@@ -1,7 +1,7 @@
 {
    "resources": [
       {
-         "cluster_name": "zix.service",
+         "cluster_name": "grpc-proxy.us-east-1.zix.service",
          "endpoints": [
             {
                "lb_endpoints": [

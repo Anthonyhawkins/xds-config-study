@@ -74,6 +74,8 @@ generate_configs() {
     local profile_dir="$(dirname "$profile_path")"
     local service_name="$2"
     local output_dir="$3"
+    local role_name="$4"
+    local region_name="$5"
     
     echo "Generating configs for $service_name in $(basename "$profile_dir")"
     
@@ -90,6 +92,8 @@ generate_configs() {
             --jpath . \
             "$TEMPLATES_DIR/cluster.jsonnet" \
             --ext-str cluster_name="$service_name" \
+            --ext-str role="$role_name" \
+            --ext-str region="$region_name" \
             > "$output_dir/cds.json"
         echo "  Generated cds.json"
     else
@@ -103,6 +107,8 @@ generate_configs() {
             --jpath . \
             "$TEMPLATES_DIR/loadassignment.jsonnet" \
             --ext-str cluster_name="$service_name" \
+            --ext-str role="$role_name" \
+            --ext-str region="$region_name" \
             > "$output_dir/eds.json"
         echo "  Generated eds.json"
     else
@@ -134,22 +140,18 @@ main() {
         # Create corresponding output directory
         output_dir="$OUTPUT_DIR/$relative_dir"
         
-        # Extract service name from path structure
-        # Look for pattern: .../services/{service-name}/{region}/profile.jsonnet
-        if [[ "$relative_path" =~ .*/services/([^/]+)/[^/]+/profile\.jsonnet$ ]]; then
-            service_name="${BASH_REMATCH[1]}"
+        # Extract role, service, and region from path structure
+        # Look for pattern: {role}/services/{service-name}/{region}/profile.jsonnet
+        if [[ "$relative_path" =~ ^([^/]+)/services/([^/]+)/([^/]+)/profile\.jsonnet$ ]]; then
+            role_name="${BASH_REMATCH[1]}"
+            service_name="${BASH_REMATCH[2]}"
+            region_name="${BASH_REMATCH[3]}"
         else
-            # Fallback: try to extract from directory structure
-            service_name="$(basename "$(dirname "$profile_dir")")"
-            
-            # Skip if service name extraction failed
-            if [[ -z "$service_name" ]] || [[ "$service_name" == "services" ]]; then
-                echo "Warning: Could not extract service name from path: $profile_path"
-                continue
-            fi
+            echo "Warning: Could not extract role/service/region from path: $profile_path"
+            continue
         fi
         
-        generate_configs "$profile_path" "$service_name" "$output_dir"
+        generate_configs "$profile_path" "$service_name" "$output_dir" "$role_name" "$region_name"
         
     done < <(find "$INPUT_DIR" -name "profile.jsonnet" -print0)
     

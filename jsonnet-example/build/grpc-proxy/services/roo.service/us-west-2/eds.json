@@ -1,7 +1,7 @@
 {
    "resources": [
       {
-         "cluster_name": "roo.service",
+         "cluster_name": "grpc-proxy.us-west-2.roo.service",
          "endpoints": [
             {
                "lb_endpoints": [

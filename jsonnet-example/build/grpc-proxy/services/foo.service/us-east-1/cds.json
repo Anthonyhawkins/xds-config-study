@@ -1,7 +1,7 @@
 {
    "connect_timeout": "3s",
    "load_assignment": {
-      "cluster_name": "foo.service"
+      "cluster_name": "grpc-proxy.us-east-1.foo.service"
    },
-   "name": "foo.service"
+   "name": "grpc-proxy.us-east-1.foo.service"
 }

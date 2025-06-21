@@ -1,7 +1,7 @@
 {
    "connect_timeout": "3s",
    "load_assignment": {
-      "cluster_name": "zix.service"
+      "cluster_name": "grpc-proxy.us-east-1.zix.service"
    },
-   "name": "zix.service"
+   "name": "grpc-proxy.us-east-1.zix.service"
 }

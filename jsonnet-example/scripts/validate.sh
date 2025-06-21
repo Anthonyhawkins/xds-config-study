@@ -24,12 +24,14 @@ Options:
     --weight-only         Run only weight distribution validation
     --fields-only         Run only required fields validation  
     --endpoints-only      Run only endpoint consistency validation
+    --names-only          Run only unique names validation
     -h, --help           Show this help message
 
 Available validations:
     - Weight distribution: Ensures weights per priority group sum to 100
     - Required fields: Validates required fields and data types
     - Endpoint consistency: Checks profile/endpoint consistency
+    - Unique names: Ensures names are unique across generated files
 
 Examples:
     $0 roles
@@ -64,6 +66,7 @@ main() {
     local weight_only=false
     local fields_only=false
     local endpoints_only=false
+    local names_only=false
     
     # Parse arguments
     while [[ $# -gt 0 ]]; do
@@ -78,6 +81,10 @@ main() {
                 ;;
             --endpoints-only)
                 endpoints_only=true
+                shift
+                ;;
+            --names-only)
+                names_only=true
                 shift
                 ;;
             -h|--help)
@@ -139,6 +146,11 @@ main() {
         if ! run_validation "$VALIDATE_DIR/endpoint-consistency.sh" "Endpoint Consistency" "$input_dir"; then
             ((total_failed++))
         fi
+    elif [[ "$names_only" == "true" ]]; then
+        echo -e "${YELLOW}Note: Unique names validation requires generated configuration files${NC}"
+        echo "Please run: ./scripts/generate.sh --in $input_dir --out build"
+        echo "Then run: $VALIDATE_DIR/unique-names.sh build"
+        exit 1
     else
         # Run all validations
         local validations=(
