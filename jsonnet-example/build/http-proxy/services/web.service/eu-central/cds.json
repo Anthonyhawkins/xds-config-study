@@ -1,0 +1,7 @@
+{
+   "connect_timeout": "15s",
+   "load_assignment": {
+      "cluster_name": "http-proxy.eu-central.web.service"
+   },
+   "name": "http-proxy.eu-central.web.service"
+}

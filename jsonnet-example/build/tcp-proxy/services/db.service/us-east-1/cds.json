@@ -1,0 +1,7 @@
+{
+   "connect_timeout": "60s",
+   "load_assignment": {
+      "cluster_name": "tcp-proxy.us-east-1.db.service"
+   },
+   "name": "tcp-proxy.us-east-1.db.service"
+}

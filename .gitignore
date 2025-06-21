@@ -1,5 +1,4 @@
 # Build directories - Generated configuration files
-build/
 test-*
 *-build/
 *-configs/

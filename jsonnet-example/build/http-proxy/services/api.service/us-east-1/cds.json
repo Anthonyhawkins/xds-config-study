@@ -1,0 +1,7 @@
+{
+   "connect_timeout": "5s",
+   "load_assignment": {
+      "cluster_name": "http-proxy.us-east-1.api.service"
+   },
+   "name": "http-proxy.us-east-1.api.service"
+}
