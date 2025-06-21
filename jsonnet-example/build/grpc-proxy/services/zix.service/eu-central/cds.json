@@ -1,0 +1,7 @@
+{
+   "connect_timeout": "3s",
+   "load_assignment": {
+      "cluster_name": "zix.service"
+   },
+   "name": "zix.service"
+}
