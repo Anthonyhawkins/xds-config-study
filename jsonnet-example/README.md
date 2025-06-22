@@ -37,8 +37,10 @@ This study demonstrates a systematic approach to configuration management by pro
 
 ### Prerequisites
 
-- [Jsonnet](https://jsonnet.org/) installed (`brew install jsonnet` on macOS)
-- [jq](https://stedolan.github.io/jq/) for JSON processing
+- **Bash 3.2+**: Scripts are compatible with bash 3.2 (macOS default) and newer versions
+- **[Jsonnet](https://jsonnet.org/)**: Template processing engine (`brew install jsonnet` on macOS)
+- **[jq](https://stedolan.github.io/jq/)**: JSON processing tool (`brew install jq` on macOS)
+- **Standard Unix tools**: `find`, `grep`, `awk`, `sort`, `uniq` (available on all Unix-like systems)
 
 ### 1. Generate All Configurations
 
@@ -599,6 +601,72 @@ done
 **Parameters**:
 - `--build-dir BUILD_DIR`: Directory containing generated configurations (required)
 - `--out OUTPUT_DIR`: Output directory (default: `nodes-and-resources`)
+
+#### `scripts/reverse.sh` - Configuration Source Tracing
+
+**Purpose**: Trace generated configuration files or resource directories back to their source jsonnet templates and data files, helping understand which source files control specific outputs.
+
+**Usage**:
+```bash
+./scripts/reverse.sh TARGET
+```
+
+**Parameters**:
+- `TARGET`: Path to node JSON file or resource directory name
+
+**Examples**:
+
+```bash
+# Trace a node file back to its sources
+./scripts/reverse.sh nodes-and-resources/nodes/grpc-proxy.us-west-2.json
+
+# Trace a resource directory by name
+./scripts/reverse.sh grpc-proxy.us-west-2.roo.service
+
+# Trace a resource directory by path
+./scripts/reverse.sh nodes-and-resources/resources/grpc-proxy.us-west-2.roo.service/
+```
+
+**Output Information**:
+- **Configuration Parameters**: Extracted role, region, service, and type
+- **Template Files**: Shows which jsonnet templates were used
+- **Data Files**: Lists source profile.jsonnet and common.jsonnet files  
+- **Generation Commands**: Commands to recreate the configuration
+- **Target Information**: File/directory details and metadata
+
+**Sample Output**:
+```
+Analyzing Resource: grpc-proxy.us-west-2.roo.service
+
+Configuration Parameters:
+  Role:    grpc-proxy
+  Region:  us-west-2
+  Service: roo.service
+  Type:    resource
+
+Template Files:
+  ✓ templates/cluster.jsonnet
+  ✓ templates/loadassignment.jsonnet
+
+Data Files:
+  ✓ roles/grpc-proxy/services/roo.service/us-west-2/profile.jsonnet
+  ✓ roles/grpc-proxy/services/roo.service/common.jsonnet
+
+Generation Commands:
+  # Generate specific service config:
+  ./scripts/generate.sh roles/grpc-proxy/services/roo.service/us-west-2/
+  # or
+  ./scripts/generate-target.sh grpc-proxy roo.service us-west-2
+
+  # Then sort to create node structure:
+  ./scripts/sort.sh --build-dir build
+```
+
+**Use Cases**:
+- **Debugging**: Understand which source files affect a specific configuration
+- **Change Impact**: Identify which configs will be affected by source file changes
+- **Maintenance**: Trace configurations back to their authoritative sources
+- **Documentation**: Document the relationship between generated and source files
 
 **Output Structure**:
 ```

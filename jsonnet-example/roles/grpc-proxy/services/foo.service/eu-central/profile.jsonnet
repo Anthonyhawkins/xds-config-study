@@ -6,7 +6,7 @@
         "eu-central": {
             "priority": 0,
             "weight": 100
-        }
+        },
 
         // Failover
         "us-east-1": {
@@ -16,7 +16,7 @@
         "us-west-2": {
             "priority": 0,
             "weight": 20
-        },
+        }
 
     }
 }
